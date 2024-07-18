@@ -1,10 +1,30 @@
+# Before working with R and Rstudio run ~bin/install_r.
+# Also run the R code mentioned as comment in it inside R.
+#
+# The code in this package depends on the following packages:
+# install.packages("tibble")
+# install.packages("dplyr")
+# install.packages("testthat")
+# install.packages("assertthat")
+# install.packages("purrr")
+# install.packages("tidyr")
+#
+
+# library(tibble)
+# library(dplyr)
+# library(testthat)
+# library(assertthat)
+# library(purrr)
+# library(tidyr)
+# library(ggplot2)
+
 #' Estimation of error fraction in SSO and client.
 #'
 #' @param k_SSO The number of errors found in Steek_SSO. k_SSO >= 0.
-#' @param n_SSO The number of entries in Steek_SSO. n_SSO > 0.
-#' @param n_client The number of entries in Steek_client. n_client > 0.
-#' @param S_p_SSO The number of segments in the grid for p. S_p_SSO > 0.
-#' @param S_k_client The number of segments in the grid for k_client. S_k_client > 0.
+#' @param n_SSO The number of posten in Steek_SSO. n_SSO > 0.
+#' @param n_client The number of posten in Steek_client. n_client > 0.
+#' @param S_p_SSO The number of segments in the rooster for p. S_p_SSO > 0.
+#' @param S_k_client The number of segments in the rooster for k_client. S_k_client > 0.
 #'
 #' @returns
 #' A list of named elements containing:
@@ -21,10 +41,11 @@
 #' )
 #'
 SSO_estimate <- function(k_SSO,
-                         n_SSO,
-                         n_client,
-                         S_p_SSO = 1000,
-                         S_k_client = 1000) {
+                                   n_SSO,
+                                   n_client,
+                                   S_p_SSO = 1000,
+                                   S_k_client = 1000) {
+
   # Check input parameters.
   stopifnot(k_SSO >= 0) # Need not be a whole number.
   stopifnot(posint(n_SSO))
@@ -33,66 +54,67 @@ SSO_estimate <- function(k_SSO,
   stopifnot(posint(S_p_SSO))
   stopifnot(posint(S_k_client))
 
-  # K_client contains the number of possible errors in Steek_client.
-  # The values in K_client are fixed, thus do not change.
-  # They run (approximately) from 0 to S_k_client.
+  # K_client bevat het aantal mogelijke fouten in Steek_client.
+  # De waarden in K_client zijn vast, veranderen dus niet.
+  # Ze lopen (ongeveer) van 0 tot S_k_client.
   K_client <- partition_0_1(S_k_client) * n_client
-  # K_client contains the elements from 0 to n_client, with a granularity of 1/S_k_client.
+  # K_client bevat de elementen van 0 tot n_client, met een granulariteit van 1/S_k_client.
 
-  # P_client is the probability curve we try to calculate with
+  # P_client is de kanskromme die we proberen uit te rekenen met
   # SSO_estimate().
-  # P_client must contain the probability of that number of errors
-  # for each element of K_client.
-  # We initialize all elements of P_client to 0.
+  # P_client moet voor elk element van K_client de kans op dat
+  # aantal fouten gaan bevatten.
+  # We initialiseren alle elementen van P_client op 0.
   P_client <- rep.int(0, S_k_client)
 
-  # S_p_SSO is the granularity of the grid we use.
-  # S_p_SSO indicates the number of segments, represented by their midpoints, in which we divide p,
-  # the postulated error fraction of m, the mass of all entries of
-  # the SSO.
-  grid <- partition_0_1(S_p_SSO)
-  for (p_i in grid) {
-    # p_i is the postulated value of p, the error fraction of
-    # the entire mass m, for 1 grid point.
+  # S_p_SSO is de granulariteit van het rooster dat we gebruiken.
+  # S_p_SSO geeft het aantal segmenten, gerepresenteerd door hun middens, aan waarin we p,
+  # de gepostuleerde foutfractie van m, de massa van alle posten van
+  # de SSO verdelen.
+  rooster <- partition_0_1(S_p_SSO)
+  for (p_i in rooster) {
+    # p_i is de gepostuleerde waarde van p, de foutfractie van
+    # de gehele massa m, voor 1 roosterpunt.
 
-    # This is the essential step in the algorithm: we link the binomial probabilities for both
-    # samples using p_i.
-    # Given p_i
-    # we calculate the probability of this grid point for all possible values of k_client
-    # as the product of:
-    # - the binomial probability given k_SSO, and n_SSO
-    # - the binomial probability given k_client, and n_client.
-    # Result in P_client_i.
+    # Dit is de essentiele stap in het algoritme: we koppelen de binomiale kansen voor beide
+    # steekproeven aan elkaar middels p_i.
+    #
+    # Gegeven p_i
+    # berekenen we voor alle mogelijke waarden van k_client de waarschijnlijkheid van dit
+    # roosterpunt als het product van:
+    # - de binomiale kans gegeven k_SSO, en n_SSO
+    # - de binomiale kans gegeven k_client, en n_client.
+    # Resultaat in P_client_i.
     P_client_i <-
       dbinom(k_SSO, n_SSO, p_i) * dbinom_continuous(K_client, n_client, p_i)
 
-    # We aggregate the found P_client_i over this grid point, p_i,
-    # with all previously found values for P_client_i.
-    # Result in P_client.
+    # We aggregeren de gevonden P_client_i over dit roosterpunt, p_i,
+    # met alle eerder gevonden waarden voor P_client_i.
+    # Resultaat in P_client.
     P_client <- P_client + P_client_i
   }
 
-  # Standardize the probability curve so that the area is 1.
+  # Standaardiseer de kanskromme zodat het oppervlak 1 is.
   surface <- sum(P_client) / length(P_client)
   P_client <- P_client / surface
 
-  # Transform into ew_probability_graph.
+  # Vorm om tot ew_probability_graph.
   P_client <- vec_to_ew_probability_graph(P_client)
 
-  # Also calculate the probability curve of the error fraction in SSO.
+  # Bereken ook kanskromme van foutfractie in SSO.
   P_SSO <- ew_eval(k = k_SSO,
                    n = n_SSO,
 
-                   # The granularity must be the same as for P_client.
+                   # De granulariteit moet gelijk zijn aan die voor P_client.
                    S = S_k_client,
                    distri = "binom")
 
-  # SSO_p and client_p must be identical.
+  # SSO_p en client_p moeten identiek zijn.
   SSO_p <- get_p_from_ew(P_SSO)
   client_p <- get_p_from_ew(P_client)
   stopifnot(isTRUE(all.equal(SSO_p, client_p)))
 
-  # Return resulting probability curves and input parameters.
+  # Geef resulterende kanskrommes en invoerparameters terug.
   list(
     "P_SSO" = P_SSO,
     "P_client" = P_client,
@@ -104,9 +126,9 @@ SSO_estimate <- function(k_SSO,
   )
 }
 
-#' Show the results of a call to SSO_estimate() in a plot.
+#' Show the results of a call to SSO_estimate() or SSO_estimate_continous() in a plot.
 #'
-#' @param SSO_out The output of a call to SSO_estimate().
+#' @param SSO_out The output of a call to SSO_estimate() or SSO_estimate_continous().
 #' @param cert    The certainty level for the min and max values of the error fraction.
 #' @param visual  If TRUE, a plot is returned.
 #'                If FALSE, a list of specific values is returned.
@@ -142,7 +164,7 @@ SSO_graph_plot <-
     S_p_SSO <- SSO_out[["S_p_SSO"]]
     stopifnot(is.numeric(S_p_SSO))
     stopifnot(S_p_SSO >= 1)
-    S_k_client <- SSO_out[["S_k_client"]]
+    S_k_client <- SSO_out[["S_k_client"]] # If missing, we will see that later on.
 
     # Get vectors h and p from SSO_graph.
     SSO_h <- get_h_from_ew(SSO_graph)
@@ -198,14 +220,25 @@ SSO_graph_plot <-
         client_max,
         cert
       )
-      line3 <- sprintf(
-        "(input k_SSO = %d; n_SSO = %d; n_client = %d; S_p_SSO = %d; S_k_client = %d)",
-        k_SSO,
-        n_SSO,
-        n_client,
-        S_p_SSO,
-        S_k_client
-      )
+      if (is.na(S_k_client)) {
+        # S_k_client is missing.
+        line3 <- sprintf(
+          "(input k_SSO = %d; n_SSO = %d; n_client = %d; S_p_SSO = %d)",
+          k_SSO,
+          n_SSO,
+          n_client,
+          S_p_SSO
+        )
+      } else {
+        line3 <- sprintf(
+          "(input k_SSO = %d; n_SSO = %d; n_client = %d; S_p_SSO = %d; S_k_client = %d)",
+          k_SSO,
+          n_SSO,
+          n_client,
+          S_p_SSO,
+          S_k_client
+        )
+      }
       subtitle <- sprintf("%s\n%s\n%s", line1, line2, line3)
 
       # Call ggplot() on prepared data, title and subtitle.
@@ -261,6 +294,7 @@ SSO_graph_plot <-
         "client_min",
         "client_max"
       )
-      result
+      # class(result) <- c("prob_graph_info", class(result))
+      return(result)
     }
   }

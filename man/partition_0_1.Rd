@@ -15,7 +15,3 @@ The vector of segment midpoints, c(\code{(1-0.5)/S}, \code{(2-0.5)/S}, ... (\cod
 \description{
 Partition [0,1] into S equally sized consecutive segments. Each segment is given by its midpoint.
 }
-\examples{
-  partition_0_1(S = 5)
-  #  Returns the vector c(0.1, 0.3, 0.5, 0.7, 0.9).
-}
