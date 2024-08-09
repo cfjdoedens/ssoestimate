@@ -247,8 +247,7 @@ SSO_graph_plot <-
         k_SSO,
         n_SSO,
         N_client,
-        toString(cert),
-        # No trailing zeros.
+        toString(cert), # Remove trailing zeros from cert.
         S
       )
       line2 <- sprintf(
