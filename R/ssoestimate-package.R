@@ -2,20 +2,21 @@
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @importFrom stats dbinom
-#' @importFrom stats dnorm
-#' @importFrom stats dpois
-#' @importFrom stats dhyper
 #' @importFrom dplyr pull
 #' @importFrom dplyr '%>%'
 #' @importFrom dplyr filter
 #' @importFrom dplyr near
-#' @importFrom tibble tibble
-#' @importFrom tibble is_tibble
-#' @importFrom tidyr gather
+#' @import ggplot2
 #' @importFrom purrr map_dbl
 #' @importFrom purrr detect_index
 #' @importFrom rlang .data
-#' @import ggplot2
+#' @importFrom stats dbeta
+#' @importFrom stats dbinom
+#' @importFrom stats dnorm
+#' @importFrom stats dpois
+#' @importFrom stats dhyper
+#' @importFrom tibble tibble
+#' @importFrom tibble is_tibble
+#' @importFrom tidyr gather
 ## usethis namespace: end
 NULL

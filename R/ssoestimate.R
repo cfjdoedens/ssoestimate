@@ -1,72 +1,102 @@
 #' Estimation of error fraction in SSO and client.
 #'
-#' @param k_SSO The number of errors found in Steek_SSO. k_SSO >= 0.
-#' @param n_SSO The number of entries in Steek_SSO. n_SSO > 0.
-#' @param n_client The number of entries in Steek_client. n_client > 0.
-#' @param S_p_SSO The number of segments in the grid for p. S_p_SSO > 0.
-#' @param S_k_client The number of segments in the grid for k_client. S_k_client > 0.
+#' A shared service organization, SSO, performs transactions for various clients.
+#' Each transaction can potential be wrong, or partially wrong.
+#' To get an estimate of the error rate of all the transactions we can take a
+#' random sample of the transactions from the SSO.
+#' This random sample is defined by the number of transactions, n_SSO, in the
+#' sample, and the sum of partial and full errors found, k_SSO.
+#' Given the number of transactions for a specific client, N_client,
+#' we can then estimate the error rate for that specific client.
+#' This function makes such an estimation, using the assumption that we can consider
+#' the transactions of the client to be a random sample of all the transactions performed
+#' by the SSO.
+#' The function returns the probability graph of the error fraction in the SSO, and
+#' the probability graph of the error fraction in the client transactions
+#' For the estimation, the function uses a two dimensional grid of
+#' postulated values for the error fractions of SSO, and client.
+#' Both dimensions of the grid have the same granularity: S;
+#' this makes it easier to compare the two resulting probability curves.
+#' @param k_SSO The sum of partial and full errors found in the sample from the SSO.
+#'              k_SSO is a non negative real number.
+#'              Default 0.
+#' @param n_SSO The number of transactions in the sample from the SSO.
+#'              n_SSO is a positive integer.
+#'              Note that we follow the convention to use a lower case n for the number
+#'              of transactions in the sample (in this case from the SSO transactions).
+#'              Default 350.
+#' @param N_client The number of transactions of the client.
+#'                 N_client is a positive integer.
+#'                 Note that we follow the convention to use an upper case N for the number
+#'                 of transactions in the mass of all transactions (in this case of the client).
+#'                 Default 1000.
+#' @param S The number of segments, represented by their midpoints,
+#'          in which is divided each of the dimensions
+#'          of the two dimensional grid used for computing the probability
+#'          graphs of the error fraction of the transactions in the SSO,
+#'          and the errors in the transactions of the client.
+#'          So S is the granularity of the grid.
+#'          S is a positive integer.
+#'          Default 2000.
 #'
 #' @returns
 #' A list of named elements containing:
 #'
 #'         - P_SSO, the probability graph of the error fraction in SSO
-#'         - P_client, the probability graph of the error fraction in Steek_client
+#'         - P_client, the probability graph of the error fraction in the client transactions
 #'         - the input parameters
 #' @export
 #'
 #' @examples
-#' y <- SSO_estimate(
-#'   k_SSO = 1, n_SSO = 3000, n_client = 500,
-#'   S_p_SSO = 1000, S_k_client = 501
-#' )
+#' y <- SSO_estimate(k_SSO = 1, n_SSO = 3000, N_client = 500, S = 501)
 #'
-SSO_estimate <- function(k_SSO,
-                         n_SSO,
-                         n_client,
-                         S_p_SSO = 1000,
-                         S_k_client = 1000) {
+SSO_estimate <- function(k_SSO = 0,
+                         n_SSO = 350,
+                         N_client = 1000,
+                         S = 2000) {
   # Check input parameters.
   stopifnot(k_SSO >= 0) # Need not be a whole number.
   stopifnot(posint(n_SSO))
   stopifnot(n_SSO >= k_SSO)
-  stopifnot(posint(n_client))
-  stopifnot(posint(S_p_SSO))
-  stopifnot(posint(S_k_client))
+  stopifnot(posint(N_client))
+  stopifnot(posint(S))
 
-  # K_client contains the number of possible errors in Steek_client.
+  # We divide the postulated sums of errors in the client transactions evenly
+  # spaced into S segments, and we assign this to the vector K_client.
+  # Each segment is represented by its midpoint.
   # The values in K_client are fixed, thus do not change.
-  # They run (approximately) from 0 to S_k_client.
-  K_client <- partition_0_1(S_k_client) * n_client
-  # K_client contains the elements from 0 to n_client, with a granularity of 1/S_k_client.
+  # They run (approximately) from 0 to the number of client transactions.
+  K_client <- partition_0_1(S) * N_client
 
-  # P_client is the probability curve we try to calculate with
-  # SSO_estimate().
-  # P_client must contain the probability of that number of errors
-  # for each element of K_client.
+  # P_client is the vector containing the accompanying probabilities of
+  # the elements of K_client,
   # We initialize all elements of P_client to 0.
-  P_client <- rep.int(0, S_k_client)
+  P_client <- rep.int(0, S)
 
-  # S_p_SSO is the granularity of the grid we use.
-  # S_p_SSO indicates the number of segments, represented by their midpoints, in which we divide p,
-  # the postulated error fraction of m, the mass of all entries of
-  # the SSO.
-  grid <- partition_0_1(S_p_SSO)
-  for (p_i in grid) {
-    # p_i is the postulated value of p, the error fraction of
-    # the entire mass m, for 1 grid point.
+  # Also we divide the postulated error rate of the SSO transactions evenly
+  # spaced into S segments, and we assign this to the vector E_SSO.
+  # Each segment is represented by its midpoint.
+  # The values in E_SSO are fixed, thus do not change.
+  # They run (approximately) from 0 to 1.
+  E_SSO <- partition_0_1(S)
+  for (e_i in E_SSO) {
+    # e_i is the postulated value of e, the error fraction of
+    # the entire mass m of transactions of the SSO, for 1 grid point.
 
     # This is the essential step in the algorithm: we link the binomial probabilities for both
-    # samples using p_i.
-    # Given p_i
-    # we calculate the probability of this grid point for all possible values of k_client
+    # samples using e_i.
+    # Given e_i
+    # we calculate the probability of
+    # the grid points given by e_i and all values of K_client
     # as the product of:
     # - the binomial probability given k_SSO, and n_SSO
-    # - the binomial probability given k_client, and n_client.
+    # - the binomial probabilities given, all values of K_client, and N_client.
     # Result in P_client_i.
     P_client_i <-
-      dbinom(k_SSO, n_SSO, p_i) * dbinom_continuous(K_client, n_client, p_i)
+      dbinom(k_SSO, n_SSO, e_i) * dbinom_continuous(K_client, N_client, e_i)
 
-    # We aggregate the found P_client_i over this grid point, p_i,
+    # We aggregate the found P_client_i over
+    # the grid points given by e_i and all values of K_client
     # with all previously found values for P_client_i.
     # Result in P_client.
     P_client <- P_client + P_client_i
@@ -76,15 +106,15 @@ SSO_estimate <- function(k_SSO,
   surface <- sum(P_client) / length(P_client)
   P_client <- P_client / surface
 
-  # Transform into ew_probability_graph.
+  # Transform P_client into an ew_probability_graph.
+  # Thereby we interpret P_client as a histogram of the error fraction in the client transactions,
+  # making it comparable with the histogram of the error fraction in the SSO transactions.
   P_client <- vec_to_ew_probability_graph(P_client)
 
   # Also calculate the probability curve of the error fraction in SSO.
   P_SSO <- ew_eval(k = k_SSO,
                    n = n_SSO,
-
-                   # The granularity must be the same as for P_client.
-                   S = S_k_client,
+                   S = S,
                    distri = "binom")
 
   # SSO_p and client_p must be identical.
@@ -95,30 +125,45 @@ SSO_estimate <- function(k_SSO,
   # Return resulting probability curves and input parameters.
   list(
     "P_SSO" = P_SSO,
+    # Resulting probability curve of the error fraction in SSO.
     "P_client" = P_client,
+    # Resulting probability curve of the error fraction in the client transactions.
     "k_SSO" = k_SSO,
+    # Input parameter.
     "n_SSO" = n_SSO,
-    "n_client" = n_client,
-    "S_p_SSO" = S_p_SSO,
-    "S_k_client" = S_k_client
+    # Input parameter.
+    "N_client" = N_client,
+    # Input parameter.
+    "S" = S # Input parameter.
   )
 }
 
-#' Show the results of a call to SSO_estimate() in a plot.
+#' Show the results of a call to SSO_estimate().
+#'
+#' This function shows, when visual is TRUE, the results of a call to SSO_estimate() in a plot
+#' combining the probability curves of the error fraction in the SSO transactions,
+#' and of the error fraction in the client transactions.
+#' The text in the plot shows the rounded of values of the min, most probable, and max values
+#' for both the SSO and the client.
+#' When visual is FALSE, a list of the min, most probable,
+#' and max values for both the SSO and the client are returned.
+#' In that case the raw values of min, most probable, and max are returned,
+#' so no rounding is done.
 #'
 #' @param SSO_out The output of a call to SSO_estimate().
-#' @param cert    The certainty level for the min and max values of the error fraction.
+#' @param cert    The one sided certainty level for the min and max values of the error fraction.
+#'                Default 0.95.
 #' @param visual  If TRUE, a plot is returned.
 #'                If FALSE, a list of specific values is returned.
-#'
+#'                Default TRUE.
 #' @return        If visual is TRUE, a ggplot is returned.
 #'                If visual is FALSE, a named list is returned consisting of
-#'                - the most probable, min, and max values of the error fraction in SSO;
+#'                - the max, most probable, and min values of the error fraction in SSO;
 #'                - and ditto for the client.
 #' @export
 #'
 #' @examples
-#' SSO_out <- SSO_estimate(k_SSO = 1, n_SSO = 3000, n_client = 500, S_p_SSO = 1000)
+#' SSO_out <- SSO_estimate(k_SSO = 1, n_SSO = 3000, N_client = 500, S = 500)
 #' SSO_graph_plot(SSO_out)
 SSO_graph_plot <-
   function(SSO_out,
@@ -136,13 +181,12 @@ SSO_graph_plot <-
     stopifnot(is.numeric(n_SSO))
     stopifnot(n_SSO >= 1)
     stopifnot(n_SSO >= k_SSO)
-    n_client <- SSO_out[["n_client"]]
-    stopifnot(is.numeric(n_client))
-    stopifnot(n_client >= 1)
-    S_p_SSO <- SSO_out[["S_p_SSO"]]
-    stopifnot(is.numeric(S_p_SSO))
-    stopifnot(S_p_SSO >= 1)
-    S_k_client <- SSO_out[["S_k_client"]]
+    N_client <- SSO_out[["N_client"]]
+    stopifnot(is.numeric(N_client))
+    stopifnot(N_client >= 1)
+    S <- SSO_out[["S"]]
+    stopifnot(is.numeric(S))
+    stopifnot(S >= 1)
 
     # Get vectors h and p from SSO_graph.
     SSO_h <- get_h_from_ew(SSO_graph)
@@ -156,13 +200,29 @@ SSO_graph_plot <-
     stopifnot(isTRUE(all.equal(SSO_p, client_p)))
     p <- SSO_p
 
-    # Get location, i.e. value of p, for each extreme value for SSO_graph, and client_graph.
+    # Get location, i.e. value of p, for all extreme values for SSO_graph, and client_graph.
     SSO_most_prob <- ew_most(SSO_graph)
     SSO_min <- ew_min(SSO_graph, cert)
     SSO_max <- ew_max(SSO_graph, cert)
     client_most_prob <- ew_most(client_graph)
     client_min <- ew_min(client_graph, cert)
     client_max <- ew_max(client_graph, cert)
+
+    # Check these locations.
+    {
+      # Per client and per SSO, the min, most probable, and max values of the error fraction
+      # should be in the right order.
+      stopifnot(client_min <= client_most_prob)
+      stopifnot(client_most_prob <= client_max)
+      stopifnot(SSO_min <= SSO_most_prob)
+      stopifnot(SSO_most_prob <= SSO_max)
+    }
+    {
+      # The chance curve of the client is derived from the chance curve of the SSO,
+      # but less sharp.
+      stopifnot(client_min <= SSO_min)
+      stopifnot(SSO_max <= client_max)
+    }
 
     if (visual) {
       # Make a plot!
@@ -183,28 +243,25 @@ SSO_graph_plot <-
 
       # Construct subtitle.
       line1 <- sprintf(
-        "SSO    most probable %1.5f min %1.5f (at cert %1.2f) max %1.5f (at cert %1.2f)",
-        SSO_most_prob,
-        SSO_min,
-        cert,
-        SSO_max,
-        cert
-      )
-      line2 <- sprintf(
-        "client  most probable %1.5f min %1.5f (at cert %1.2f) max %1.5f (at cert %1.2f)",
-        client_most_prob,
-        client_min,
-        cert,
-        client_max,
-        cert
-      )
-      line3 <- sprintf(
-        "(input k_SSO = %d; n_SSO = %d; n_client = %d; S_p_SSO = %d; S_k_client = %d)",
+        "input k_SSO = %d; n_SSO = %d; N_client = %d; cert = %s; S = %d",
         k_SSO,
         n_SSO,
-        n_client,
-        S_p_SSO,
-        S_k_client
+        N_client,
+        toString(cert),
+        # No trailing zeros.
+        S
+      )
+      line2 <- sprintf(
+        "SSO    max %s most probable %s min %s",
+        round_ew_prob(SSO_max, S),
+        round_ew_prob(SSO_most_prob, S),
+        round_ew_prob(SSO_min, S)
+      )
+      line3 <- sprintf(
+        "client   max %s most probable %s min %s",
+        round_ew_prob(client_max, S),
+        round_ew_prob(client_most_prob, S),
+        round_ew_prob(client_min, S)
       )
       subtitle <- sprintf("%s\n%s\n%s", line1, line2, line3)
 
@@ -247,19 +304,19 @@ SSO_graph_plot <-
         )
     } else {
       # Return non-visual information.
-      result <- c(SSO_most_prob,
+      result <- c(SSO_max,
+                  SSO_most_prob,
                   SSO_min,
-                  SSO_max,
+                  client_max,
                   client_most_prob,
-                  client_min,
-                  client_max)
+                  client_min)
       names(result) <- c(
+        "SSO_max",
         "SSO_most_prob",
         "SSO_min",
-        "SSO_max",
+        "client_max",
         "client_most_prob",
-        "client_min",
-        "client_max"
+        "client_min"
       )
       result
     }

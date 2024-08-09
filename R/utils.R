@@ -1,26 +1,3 @@
-# dbinom_continuous() is a version of dbinom() where k is allowed to be
-# any non negative real number.
-# Code based on code from ChatGPT 4o, and checked using
-# https://en.wikipedia.org/wiki/Beta_distribution, en
-# https://en.wikipedia.org/wiki/Gamma_function.
-dbinom_continuous <- function(k, n, p) {
-  if (length(k) > 1) {
-    return(map_dbl(k, dbinom_continuous, n, p))
-  }
-
-  # Check for valid input values.
-  stopifnot(k >= 0, k <= n)
-  stopifnot(posint(n))
-  stopifnot(p >= 0, p <= 1)
-
-  # Use the Beta function to handle non-integer k.
-  # This could probably be done more directly by using dbeta()/(n +1) or something like that,
-  # but did not invest time into that direction.
-  beta_part <- exp(lgamma(n + 1) - lgamma(k + 1) - lgamma(n - k + 1))
-  prob_part <- p^k * (1 - p)^(n - k)
-  beta_part * prob_part
-}
-
 nonnegint <- function(i) {
   if (!is.numeric(i)) {
     return(FALSE)
@@ -44,15 +21,15 @@ posint <- function(i) {
 #' @param S An integer >= 1. The number of segments to partition \[0,1\] into.
 #' @returns The vector of segment midpoints, c(\code{(1-0.5)/S}, \code{(2-0.5)/S}, ... (\code{(S-0.5)/S}).
 #  @examples
-#   partition_0_1(S = 5)
-#     Returns the vector c(0.1, 0.3, 0.5, 0.7, 0.9).
+#    partition_0_1(S = 5)
+#      Returns the vector c(0.1, 0.3, 0.5, 0.7, 0.9).
 partition_0_1 <- function(S = 1000) {
   seq(0 + 1 / (2 * S), 1 - 1 / (2 * S), 1 / S)
 }
 
 # Make a ew_probability_graph from a vector,
 # whereby we assume that the elements of the vector
-# represent the probailities 1/S - 1/2S, ..., S/S - 1/2S.
+# represent the probabilities 1/S - 1/2S, ..., S/S - 1/2S.
 # S is the length of the vector.
 vec_to_ew_probability_graph <-
   function(v) {
@@ -298,3 +275,9 @@ ew_max <-
 
     max_p
   }
+
+round_ew_prob <- function(p, S) {
+  stopifnot(posint(S))
+  signif <- floor(-log10(1/(2*S)))
+  format(round(p, signif), nsmall = signif)
+}
