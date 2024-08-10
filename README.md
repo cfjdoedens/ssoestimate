@@ -4,6 +4,8 @@
 # ssoestimate
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/cfjdoedens/ssoestimate/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/cfjdoedens/ssoestimate/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 A shared Service Organsition, SSO, is an administrative entity that
@@ -27,7 +29,7 @@ to establish with 95% confidence that the error rate for each client is
 at most 1%, then we could use (expecting no errors in the samples) a
 sample of 300 transactions from each client, totalling 3000 samples.
 Instead when using ssoestimate it suffices to draw only 350 transactions
-in total to conclude with 95% confidence that the error rate of eahc
+in total to conclude with 95% confidence that the error rate of each
 client is at most 1%.
 
 A small paper about the algorithm used is forthcoming.
@@ -37,7 +39,8 @@ A small paper about the algorithm used is forthcoming.
 You can install the development version of ssoestimate like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+install.packages("devtools")
+devtinstall_github("cfjdoedens/ssoestimate")
 ```
 
 ## Example

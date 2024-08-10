@@ -16,27 +16,35 @@ knitr::opts_chunk$set(
 # ssoestimate
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/cfjdoedens/ssoestimate/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/cfjdoedens/ssoestimate/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 A shared Service Organsition, SSO, is an administrative entity that
 carries out financial transaction on behalf of a number of client organisations.
 The kind of transactions done by the SSO are the same for all clients.
 
-The goal of ssoestimate is to estimate the monetary error rate of transactions for each 
-single client of the SSO. This is done by using a sample from all the transactions
+The goal of ssoestimate is to estimate the monetary error rate of 
+transactions for each 
+single client of the SSO. This is done by using a sample from all the 
+transactions
 of the SSO as a proxy. This assumes that the most efficient way to estimate 
 this error rate is by means of sampling: it is not feasable to do
 for example an integral data-analyses of the transactions.
-The one big assumption that ssoestimate uses is that the set of transactions from the
+The one big assumption that ssoestimate uses is that the set of transactions 
+from the
 client is a random sample from all the transactions carried out by the SSO.
 
 Using this assumption makes it possible to efficiently estimate the error rate
-for all the clients of the SSO. For example suppose that the SSO processed 100,000 transactions, for 10 clients.
-And suppose we want to establish with 95% confidence that the error rate for each client
-is at most 1%, then we could use (expecting no errors in the samples) a sample of 300 transactions from each client,
+for all the clients of the SSO. For example suppose that the SSO processed 
+100,000 transactions, for 10 clients.
+And suppose we want to establish with 95% confidence that the error rate for
+each client
+is at most 1%, then we could use (expecting no errors in the samples) a sample 
+of 300 transactions from each client,
 totalling 3000 samples. Instead when using ssoestimate it suffices
-to draw only 350 transactions in total to conclude with 95% confidence that the error
-rate of eahc client is at most 1%.
+to draw only 350 transactions in total to conclude with 95% confidence that 
+the error
+rate of each client is at most 1%.
 
 A small paper about the algorithm used is forthcoming.
 
@@ -45,7 +53,8 @@ A small paper about the algorithm used is forthcoming.
 You can install the development version of ssoestimate like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+install.packages("devtools")
+devtinstall_github("cfjdoedens/ssoestimate")
 ```
 
 ## Example

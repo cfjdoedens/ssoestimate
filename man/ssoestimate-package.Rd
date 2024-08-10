@@ -8,6 +8,14 @@
 \description{
 Estimate maximum error rate of service provided to any client of a Shared Service Organization (SSO) by using a sufficiently large, but relatively small, sample of the overall population. The key assumption for this is that the service for each client can be considered as a random sample from the service of the overall population.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/cfjdoedens/ssoestimate}
+  \item Report bugs at \url{https://github.com/cfjdoedens/ssoestimate/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Crist-Jan Doedens \email{cfjdoedens@chance-matters.nl} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
 
