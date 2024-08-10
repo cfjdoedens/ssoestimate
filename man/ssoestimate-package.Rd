@@ -12,6 +12,7 @@ Estimate maximum error rate of service provided to any client of a Shared Servic
 Useful links:
 \itemize{
   \item \url{https://github.com/cfjdoedens/ssoestimate}
+  \item \url{https://cfjdoedens.github.io/ssoestimate/}
   \item Report bugs at \url{https://github.com/cfjdoedens/ssoestimate/issues}
 }
 

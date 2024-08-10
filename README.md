@@ -63,15 +63,15 @@ x <- SSO_estimate(k_SSO = 0, n_SSO = 350, N_client = 1000, S = 1000)
 SSO_graph_plot(x, cert = 0.95, visual = TRUE)
 ```
 
-<img src="man/figures/README-visual example-1.png" width="100%" />
+<img src="man/figures/README-visual-example-1.png" width="100%" />
 
 ## Example: non visual presentation
 
-We can show the result of the estimation carreid out in teh previous
+We can show the result of the estimation carried out in the previous
 example also non visual. The numbers shown in the non visual
-presentation are the raw results of the estimation. The numbers differ
-slightly from the visual example, as in the visual example the numbers
-are not rounded.
+presentation are the raw results of the estimation; they differ slightly
+from those in the visual example, as the former numbers are *not*
+rounded, and the latter *are* rounded.
 
 ``` r
 SSO_graph_plot(x, cert = 0.95, visual = FALSE)
