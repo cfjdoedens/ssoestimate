@@ -72,12 +72,12 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cfjdoedens/ssoestimate" class="external-link">ssoestimate</a></span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/SSO_estimate.html">SSO_estimate</a></span><span class="op">(</span>k_SSO <span class="op">=</span> <span class="fl">0</span>, n_SSO <span class="op">=</span> <span class="fl">350</span>, N_client <span class="op">=</span> <span class="fl">1000</span>, S <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/SSO_graph_plot.html">SSO_graph_plot</a></span><span class="op">(</span><span class="va">x</span>, cert <span class="op">=</span> <span class="fl">0.95</span>, visual <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-visual%20example-1.png" width="100%"></p>
+<p><img src="reference/figures/README-visual-example-1.png" width="100%"></p>
 </div>
 <div class="section level2">
 <h2 id="example-non-visual-presentation">Example: non visual presentation<a class="anchor" aria-label="anchor" href="#example-non-visual-presentation"></a>
 </h2>
-<p>We can show the result of the estimation carreid out in teh previous example also non visual. The numbers shown in the non visual presentation are the raw results of the estimation. The numbers differ slightly from the visual example, as in the visual example the numbers are not rounded.</p>
+<p>We can show the result of the estimation carried out in the previous example also non visual. The numbers shown in the non visual presentation are the raw results of the estimation; they differ slightly from those in the visual example, as the former numbers are <em>not</em> rounded, and the latter <em>are</em> rounded.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/SSO_graph_plot.html">SSO_graph_plot</a></span><span class="op">(</span><span class="va">x</span>, cert <span class="op">=</span> <span class="fl">0.95</span>, visual <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          SSO_max    SSO_most_prob          SSO_min       client_max </span></span>
