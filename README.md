@@ -44,18 +44,43 @@ install.packages("devtools")
 devtools::install_github("cfjdoedens/ssoestimate")
 ```
 
-## Example
+## Example: visual presentation
 
 This example shows that indeed 350 transactions (n_SSO = 350), which
 turn out to have no errors (k_SSO = 0), suffice to ascertain that a
 client which has 1000 transactions (N_client = 1000) has with 95% (cert
 = 0.95) certainty at most 1% errors (client max 0.010).
 
-``` r
+The estimated values for SSO max, SSO post probable, SSO min, and ditto
+for the client are rounded based on the value of S. The precision of the
+estimation is at most 1/(2\*S). So, a higher value for S gives a better
+precision of the estimation. In this example the precision is at most
+1/2000 = 0.0005.
 
+``` r
 library(ssoestimate)
 x <- SSO_estimate(k_SSO = 0, n_SSO = 350, N_client = 1000, S = 1000)
 SSO_graph_plot(x, cert = 0.95, visual = TRUE)
 ```
 
-<img src="man/figures/README-example-1.png" width="100%" />
+<img src="man/figures/README-visual example-1.png" width="100%" />
+
+## Example: non visual presentation
+
+We can show the result of the estimation carreid out in teh previous
+example also non visual. The numbers shown in the non visual
+presentation are the raw results of the estimation. The numbers differ
+slightly from the visual example, as in the visual example the numbers
+are not rounded.
+
+``` r
+SSO_graph_plot(x, cert = 0.95, visual = FALSE)
+#>          SSO_max    SSO_most_prob          SSO_min       client_max 
+#>           0.0085           0.0005           0.0005           0.0095 
+#> client_most_prob       client_min 
+#>           0.0005           0.0005
+```
+
+As we can see, the raw results give a slightly misleading impression, as
+we know for example, that the most likely error rate for both SSO and
+client is 0.0, and not 0.0005.
