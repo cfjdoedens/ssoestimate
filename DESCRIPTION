@@ -22,5 +22,5 @@ Imports:
     purrr,
     testthat,
     rlang
-URL: https://github.com/cfjdoedens/ssoestimate
+URL: https://github.com/cfjdoedens/ssoestimate, https://cfjdoedens.github.io/ssoestimate/
 BugReports: https://github.com/cfjdoedens/ssoestimate/issues
