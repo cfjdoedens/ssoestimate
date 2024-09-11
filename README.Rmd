@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 A shared Service Organisation, SSO, is an administrative entity that
-carries out financial transaction on behalf of a number of client
+carries out financial transactions on behalf of a number of client
 organisations. The kind of transactions done by the SSO are the same for
 all clients.
 

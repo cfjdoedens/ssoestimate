@@ -27,7 +27,7 @@ partition_0_1 <- function(S = 1000) {
   seq(0 + 1 / (2 * S), 1 - 1 / (2 * S), 1 / S)
 }
 
-# Make a ew_probability_graph from a vector,
+# Transform a vector v to an ew_probability_graph,
 # whereby we assume that the elements of the vector
 # represent the probabilities 1/S - 1/2S, ..., S/S - 1/2S.
 # S is the length of the vector.
@@ -35,13 +35,23 @@ vec_to_ew_probability_graph <-
   function(v) {
     S <- length(v)
 
-    # Create initial histogram from f by dividing [0,1] into S segments.
+    # Create initial histogram from v by dividing [0,1] into S segments.
     # The sum of the area in the histogram is not yet normalized to 1.
     p <- partition_0_1(S)
     h <- v
 
     # Normalize the chance mass of the histogram to 1.
     surface <- sum(h) / S
+
+    # When the surface is 0 it follows that all values of
+    # h are 0.
+    # We assume that this means that all values of h
+    # are equally (more or less) unlikely.
+    # So we make each value of h equally likely.
+    if (surface == 0) {
+      h <- rep(1, S)
+      surface <- sum(h) / S
+    }
     h <- h / surface
 
     # Combine vectors p and h into one tibble.
@@ -50,17 +60,17 @@ vec_to_ew_probability_graph <-
     # Designate r as of class ew_probability_graph.
     class(r) <- c("ew_probability_graph", class(r))
 
-    # Check our output.
+    # Check.
     stopifnot(validate_ew_probability_graph(r))
 
     r
   }
 
-get_p_from_ew <- function(ew) {
+ew_get_p <- function(ew) {
   ew %>% pull("p")
 }
 
-get_h_from_ew <- function(ew) {
+ew_get_h <- function(ew) {
   ew %>% pull("h")
 }
 
@@ -96,8 +106,8 @@ validate_ew_probability_graph <- function(ew, verbose = TRUE) {
   }
 
   # p and h should have the same number of elements.
-  p <- get_p_from_ew(ew)
-  h <- get_h_from_ew(ew)
+  p <- ew_get_p(ew)
+  h <- ew_get_h(ew)
 
   if (!(length(p) == length(h))) {
     if (verbose) {
@@ -141,41 +151,132 @@ validate_ew_probability_graph <- function(ew, verbose = TRUE) {
   return(TRUE)
 }
 
-unity <- function(x) {
-  1
+# g is an ew graph.
+# So it is a tibble with two columns, h and p which together describe
+# a chance curve.
+# h describes the height of the chance for p.
+# Return TRUE iff the highest value of h
+# is not reached for the first or the last element of h.
+ew_middle_peeked <- function(g) {
+  h <- ew_get_h(g)
+  i_max_h <- which.max(h)
+  S <- length(h)
+  i_max_h != 1 && i_max_h != S
 }
 
-# Create an ew_probability_graph based on a function chance_fun(x) on [0, 1].
-new_ew_probability_graph <-
-  function(chance_fun = unity, S = 10000) {
-    # Check input.
-    stopifnot(posint(S)) # S Should be a whole positive number.
+# ew_maxh_p(g)
+#   g is an ew graph. So it is a tibble with two columns, h and p which together
+#   describe a chance curve. h describes the height of the chance for p. Return
+#   the value of p for which h is highest.
+ew_maxh_p <- function(g) {
+  h <- ew_get_h(g)
+  p <- ew_get_p(g)
+  i_max_h <- which.max(h)
+  p[[i_max_h]]
+}
 
-    # Create initial histogram from f by dividing [0,1] into S segments.
-    # The sum of the area in the histogram is not yet normalized to 1.
-    p <- partition_0_1(S)
-    h <- abs(chance_fun(p))
+# ew_mincumh_p(g, cert)
+#   g is an ew graph.
+#   So it is a tibble with two columns, h and p which together describe
+#   a chance curve.
+#   h describes the height of the chance for p.
+#   Return the highest interpolated (!) value of p for which the cumulative
+#   chance of h, starting from p[[1]] and going to p[[length(p)]]
+#   is <= 1 - cert.
+ew_mincumh_p <- function(g, cert) {
+  h <- ew_get_h(g)
+  p <- ew_get_p(g)
 
-    # Normalize the chance mass of the histogram to 1.
-    surface <- sum(h) / S
-    h <- h / surface
+  # Create cumulative probability mass vector for h.
+  cumh <- cumsum(h) / length(h)
 
-    # Combine vectors p and h into one tibble.
-    r <- tibble(p, h)
-
-    # Designate r as of class ew_probability_graph.
-    class(r) <- c("ew_probability_graph", class(r))
-
-    # Check our output.
-    stopifnot(validate_ew_probability_graph(r))
-
-    r
+  S <- length(h)
+  for (i in 1:S) {
+    if (cumh[[i]] < 1 - cert) {
+      if (i == S) {
+        # This should not happen, as this would mean
+        # cumh[[S]] < 1 - cert
+        # So 1 < 1- cert, where cert > 0.
+        stop("ew_mincumh_p: 1 < 1- cert, should not be possible" )
+      } else {
+        # Continue to next i.
+      }
+    } else if (cumh[[i]] == 1 - cert) {
+      return(p[[i]])
+    } else if (cumh[[i]] > 1 - cert) {
+      if (i == 1) {
+        return((0 + p[[i]]) / 2) # This is (0 + 1/2S) / 2 = 1/4S.
+      } else if (i == S) {
+        return((p[[i]] + 1) / 2) # This is ((1 - 1/2S) + 1) / 2 = 1 - 1/4S.
+      } else {
+        return((p[[i-1]] + p[[i]]) / 2)
+        # return(p[[i-1]] + (1/S)*((1 - cert) - cumh[[i-1]])/(cumh[[i]] - cumh[[i-1]]))
+      }
+    }
   }
+
+  stop("ew_mincumh_p(): fall through; should not come here")
+}
+
+# ew_maxcumh_p(g)
+#   g is an ew graph.
+#   So it is a tibble with two columns, h and p which together describe
+#   a chance curve.
+#   h describes the height of the chance for p.
+#   Return the lowest interpolated (!) value of p for which the cumulative
+#   chance of h, starting from p[[length(p)]] and going to p[[1]]
+#   is <= cert.
+ew_maxcumh_p <-  function(g, cert) {
+  h <- ew_get_h(g)
+  p <- ew_get_p(g)
+
+  # Create cumulative probability mass vector for h.
+  cumh <- cumsum(h) / length(h)
+
+  S <- length(h)
+  for (i in S:1) {
+    if (cumh[[i]] > cert) {
+      if (i == 1) {
+        return((0 + p[[i]]) / 2) # This is (0 + 1/2S) / 2 = 1/4S.
+      } else {
+        # Continue to next i.
+      }
+    } else if (cumh[[i]] == cert) {
+      return(p[[i]])
+    } else if (cumh[[i]] < cert) {
+      if (i == S) {
+        return((p[[i]] + 1) / 2) # This is ((1 - 1/2S) + 1) / 2 = 1 - 1/4S.
+      } else if (i == 1) {
+        return((0 + p[[i]]) / 2) # This is (0 + 1/2S) / 2 = 1/4S.
+      } else {
+        return((p[[i]] + p[[i + 1]]) / 2)
+        # return(p[[i]] + (1/S)*(cert - cumh[[i]])/(cumh[[i+1]] - cumh[[i]]))
+      }
+    }
+  }
+
+  stop("ew_maxcumh_p(): fall through; should not come here")
+}
+
+round_ew_prob <- function(p, S) {
+  stopifnot(is.numeric(p))
+  stopifnot(posint(S))
+  signif <- floor(-log10(1 / (2 * S)))
+  format(round(p, signif), nsmall = signif)
+}
+
+#
+# Below support functions for SSO_estimate0().
+#
+support_funs_for_SSO_estimate0 <- function() {
+
+}
 
 # Create an ew_probability_graph based on a standard distribution.
 ew_eval <- function(k,
                     n,
-                    N = 1000, # Only used for hypergeometric distribution.
+                    N = 1000,
+                    # Only used for hypergeometric distribution.
                     S = 10000,
                     distri = "binom") {
   # Check input.
@@ -213,71 +314,141 @@ ew_eval <- function(k,
   new_ew_probability_graph(chance_fun = fun_to_use, S)
 }
 
-# From ew graph g, return value of p with highest value for h.
-ew_most <-
-  function(g) {
-    h <- get_h_from_ew(g)
-    p <- get_p_from_ew(g)
-    most_prob_h <- which.max(h)
-    p[[most_prob_h]]
+# Create an ew_probability_graph based on a function chance_fun(x) on [0, 1].
+new_ew_probability_graph <- function(chance_fun = unity, S = 10000) {
+  # Check input.
+  stopifnot(posint(S)) # S Should be a whole positive number.
+
+  # Create initial histogram from f by dividing [0,1] into S segments.
+  # The sum of the area in the histogram is not yet normalized to 1.
+  p <- partition_0_1(S)
+  h <- abs(chance_fun(p))
+
+  # Normalize the chance mass of the histogram to 1.
+  surface <- sum(h) / S
+  h <- h / surface
+
+  # Combine vectors p and h into one tibble.
+  r <- tibble(p, h)
+
+  # Designate r as of class ew_probability_graph.
+  class(r) <- c("ew_probability_graph", class(r))
+
+  # Check our output.
+  stopifnot(validate_ew_probability_graph(r))
+
+  r
+}
+
+unity <- function(x) {
+  1
+}
+
+#
+# Below support functions for SSO_estimate1().
+#
+support_funs_for_SSO_estimate1 <- function() {
+
+}
+
+# Check if ew is a valid ew_probability_graph.
+validate_ew_probability_graph1 <- function(ew, verbose = TRUE) {
+  # Ew should be a vector of non negative numbers.
+  if (!is.numeric(ew)) {
+    if (verbose) {
+      message("ew should be a numeric vector")
+    }
+    return(FALSE)
+  }
+  if (any(ew < 0)) {
+    if (verbose) {
+      message("ew should be a vector of non negative numbers")
+    }
+    return(FALSE)
   }
 
-# From ew graph g, return value of p with minimum value for h,
+  # Sum of ew should be 1.
+  S <- length(ew)
+  if (!near(sum(ew) / S, 1)) {
+    if (verbose) {
+      message("sum of ew should be 1")
+      message(sprintf("found sum of ew =  %1.5f", sum(ew)))
+    }
+    return(FALSE)
+  }
+
+  # ew should contain at least 1 element.
+  if (!(S > 0)) {
+    if (verbose) {
+      message("length of ew_probability_graph should be >=1")
+    }
+    return(FALSE)
+  }
+
+  return(TRUE)
+}
+
+# From ew graph h, return value of accompanying p with highest value for h.
+ew_maxh_p1 <- function(h) {
+  p <- partition_0_1(length(h))
+  most_prob_h <- which.max(h)
+  p[[most_prob_h]]
+}
+
+# From ew graph h, return value of accompanying p with minimum value for h,
 # given certainty cert.
-ew_min <-
-  function(g, cert) {
-    h <- get_h_from_ew(g)
-    p <- get_p_from_ew(g)
+ew_mincumh_p1 <- function(h, cert) {
+  p <- partition_0_1(length(h))
 
-    at_min <- function(x) {
-      x <= 1 - cert
-    }
-
-    # Create cumulative probability mass vector for h.
-    cum_prob_mass <- cumsum(h) / length(h)
-
-    if (cum_prob_mass[[1]] > 1 - cert) {
-      # So for all i cum_prob_mass[[i]] > 1 - cert.
-      i_min_p <- 1
-    } else {
-      # We know that there is an i for which cum_prob_mass[[i]] <= 1 - cert.
-      i_min_p <-
-        detect_index(cum_prob_mass, at_min, .dir = "backward")
-    }
-    min_p <- p[[i_min_p]]
-
-    min_p
+  at_min <- function(x) {
+    x <= 1 - cert
   }
 
-# From ew graph g, return value of p with maximum value for h,
+  # Create cumulative probability mass vector for h.
+  cum_prob_mass <- cumsum(h) / length(h)
+
+  if (cum_prob_mass[[1]] > 1 - cert) {
+    # So for all i cum_prob_mass[[i]] > 1 - cert.
+    i_min_p <- 1
+  } else {
+    # We know that there is an i for which cum_prob_mass[[i]] <= 1 - cert.
+    i_min_p <-
+      detect_index(cum_prob_mass, at_min, .dir = "backward")
+  }
+  min_p <- p[[i_min_p]]
+
+  min_p
+}
+
+# From ew graph h, return value of accompanying p with maximum value for h,
 # given certainty cert.
-ew_max <-
-  function(g, cert) {
-    h <- get_h_from_ew(g)
-    p <- get_p_from_ew(g)
+ew_maxcumh_p1 <- function(h, cert) {
+  p <- partition_0_1(length(h))
 
-    at_max <- function(x) {
-      x >= cert
-    }
-
-    # Create cumulative probability mass vector for h.
-    S <- length(h)
-    cum_prob_mass <- cumsum(h) / S
-
-    if (cum_prob_mass[[S]] < cert) {
-      # So for all i cum_prob_mass[[i]] < cert.
-      i_max_p <- S
-    } else {
-      # We know that there is an i for which cum_prob_mass[[i]] >= cert.
-      i_max_p <- detect_index(cum_prob_mass, at_max)
-    }
-    max_p <- p[[i_max_p]]
-
-    max_p
+  at_max <- function(x) {
+    x >= cert
   }
 
-round_ew_prob <- function(p, S) {
-  stopifnot(posint(S))
-  signif <- floor(-log10(1/(2*S)))
-  format(round(p, signif), nsmall = signif)
+  # Create cumulative probability mass vector for h.
+  S <- length(h)
+  cum_prob_mass <- cumsum(h) / S
+
+  if (cum_prob_mass[[S]] < cert) {
+    # So for all i cum_prob_mass[[i]] < cert.
+    i_max_p <- S
+  } else {
+    # We know that there is an i for which cum_prob_mass[[i]] >= cert.
+    i_max_p <- detect_index(cum_prob_mass, at_max)
+  }
+  max_p <- p[[i_max_p]]
+
+  max_p
+}
+
+standardize_grid <- function(g) {
+  rows <- rowSums(g)
+  S <- length(rows)
+  surface <- sum(rows)
+  g <- g / surface
+  g <- g / (S * S)
 }

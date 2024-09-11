@@ -9,7 +9,8 @@ SSO_graph_plot(SSO_out, cert = 0.95, visual = TRUE)
 \arguments{
 \item{SSO_out}{The output of a call to SSO_estimate().}
 
-\item{cert}{The one sided certainty level for the min and max values of the error fraction.
+\item{cert}{The one sided certainty level for the min and max values of
+the error fraction.
 Default 0.95.}
 
 \item{visual}{If TRUE, a plot is returned.
@@ -19,22 +20,26 @@ Default TRUE.}
 \value{
 \if{html}{\out{<div class="sourceCode">}}\preformatted{   If visual is TRUE, a ggplot is returned.
            If visual is FALSE, a named list is returned consisting of
-           - the max, most probable, and min values of the error fraction in SSO;
+           - the max, most probable, and min values of
+             the error fraction in SSO;
            - and ditto for the client.
 }\if{html}{\out{</div>}}
 }
 \description{
-This function shows, when visual is TRUE, the results of a call to SSO_estimate() in a plot
-combining the probability curves of the error fraction in the SSO transactions,
-and of the error fraction in the client transactions.
-The text in the plot shows the rounded of values of the min, most probable, and max values
-for both the SSO and the client.
+This function shows, when visual is TRUE, the results of a call to
+SSO_estimate() in a plot.
+Shown is the probability curve of the error
+fraction in the client transactions.
+For reference, also the probability curve of the error fraction in the SSO
+transactions is shown.
+The text in the plot shows the rounded of values of the min, most probable,
+and max values for both the SSO and the client.
 When visual is FALSE, a list of the min, most probable,
 and max values for both the SSO and the client are returned.
 In that case the raw values of min, most probable, and max are returned,
 so no rounding is done.
 }
 \examples{
-SSO_out <- SSO_estimate(k_SSO = 1, n_SSO = 3000, N_client = 500, S = 500)
+SSO_out <- SSO_estimate(k_SSO = 1, n_SSO = 3000, N_client = 500, S = 2)
 SSO_graph_plot(SSO_out)
 }

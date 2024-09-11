@@ -10,7 +10,7 @@
 <!-- badges: end -->
 
 A shared Service Organisation, SSO, is an administrative entity that
-carries out financial transaction on behalf of a number of client
+carries out financial transactions on behalf of a number of client
 organisations. The kind of transactions done by the SSO are the same for
 all clients.
 
@@ -75,10 +75,10 @@ rounded, and the latter *are* rounded.
 
 ``` r
 SSO_graph_plot(x, cert = 0.95, visual = FALSE)
-#>          SSO_max    SSO_most_prob          SSO_min       client_max 
-#>           0.0085           0.0005           0.0005           0.0095 
-#> client_most_prob       client_min 
-#>           0.0005           0.0005
+#>       client_max client_most_prob       client_min          SSO_max 
+#>          0.00900          0.00050          0.00025          0.00800 
+#>    SSO_most_prob          SSO_min 
+#>          0.00050          0.00025
 ```
 
 As we can see, the raw results give a slightly misleading impression, as
