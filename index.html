@@ -51,7 +51,7 @@
 <!-- badges: start -->
 
 <!-- badges: end -->
-<p>A shared Service Organisation, SSO, is an administrative entity that carries out financial transaction on behalf of a number of client organisations. The kind of transactions done by the SSO are the same for all clients.</p>
+<p>A shared Service Organisation, SSO, is an administrative entity that carries out financial transactions on behalf of a number of client organisations. The kind of transactions done by the SSO are the same for all clients.</p>
 <p>The goal of ssoestimate is to estimate the monetary error rate of transactions for each single client of the SSO. This is done by using a sample from all the transactions of the SSO as a proxy. This assumes that the most efficient way to estimate this error rate is by means of sampling: it is not feasible to do for example an integral data-analyses of the transactions. The one big assumption that ssoestimate uses is that the set of transactions from the client is a random sample from all the transactions carried out by the SSO.</p>
 <p>Using this assumption makes it possible to efficiently estimate the error rate for all the clients of the SSO. For example suppose that the SSO processed 100,000 transactions, for 10 clients. And suppose we want to establish with 95% confidence that the error rate for each client is at most 1%, then we could use (expecting no errors in the samples) a sample of 300 transactions from each client, totalling 3000 transactions. Instead when using ssoestimate it suffices to draw only 350 transactions in total to conclude with 95% confidence that the error rate of each client is at most 1%. See the example below.</p>
 <p>A small paper about the algorithm used is forthcoming.</p>
@@ -80,10 +80,10 @@
 <p>We can show the result of the estimation carried out in the previous example also non visual. The numbers shown in the non visual presentation are the raw results of the estimation; they differ slightly from those in the visual example, as the former numbers are <em>not</em> rounded, and the latter <em>are</em> rounded.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/SSO_graph_plot.html">SSO_graph_plot</a></span><span class="op">(</span><span class="va">x</span>, cert <span class="op">=</span> <span class="fl">0.95</span>, visual <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt;          SSO_max    SSO_most_prob          SSO_min       client_max </span></span>
-<span><span class="co">#&gt;           0.0085           0.0005           0.0005           0.0095 </span></span>
-<span><span class="co">#&gt; client_most_prob       client_min </span></span>
-<span><span class="co">#&gt;           0.0005           0.0005</span></span></code></pre></div>
+<span><span class="co">#&gt;       client_max client_most_prob       client_min          SSO_max </span></span>
+<span><span class="co">#&gt;          0.00900          0.00050          0.00025          0.00800 </span></span>
+<span><span class="co">#&gt;    SSO_most_prob          SSO_min </span></span>
+<span><span class="co">#&gt;          0.00050          0.00025</span></span></code></pre></div>
 <p>As we can see, the raw results give a slightly misleading impression, as we know for example, that the most likely error rate for both SSO and client is 0.0, and not 0.0005.</p>
 </div>
 </div>
