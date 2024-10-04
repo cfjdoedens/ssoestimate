@@ -1,16 +1,17 @@
 # Continuous version of dbinom(k, n, p, log = FALSE).
 #
 # However the behaviour of dbinom_continuous is different from dbinom
-# in the way that vector arguments of length > 1 are treated.
+# in the way vector arguments of length > 1 are treated.
 # Only one of k and n and p can have a length > 1.
-# dbinom() allows for a mix of lengths; but I believe that
+# dbinom() allows for a mix of lengths; but I believe that makes
+# the semantics of the function unclear.
 #
 # @param k should be a vector of 1 or more non negative real numbers;
 # so k can be a non integer number.
 # @param n should be a vector of 1 or more positive real numbers;
 # so n can be a non integer number.
 # @param p should be a vector of 1 or more real numbers in \[0, 1\].
-# @param log TRUE or FALSE.
+# @param log is one of TRUE or FALSE.
 #
 # @returns
 # A real number in \[0, 1\]

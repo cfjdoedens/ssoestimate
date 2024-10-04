@@ -2,7 +2,7 @@
 % Please edit documentation in R/ssoestimate.R
 \name{SSO_graph_plot}
 \alias{SSO_graph_plot}
-\title{Show the results of a call to SSO_estimate().}
+\title{Show the results of a call to SSO_estimate()}
 \usage{
 SSO_graph_plot(SSO_out, cert = 0.95, visual = TRUE)
 }
@@ -21,8 +21,8 @@ Default TRUE.}
 \if{html}{\out{<div class="sourceCode">}}\preformatted{   If visual is TRUE, a ggplot is returned.
            If visual is FALSE, a named list is returned consisting of
            - the max, most probable, and min values of
-             the error fraction in SSO;
-           - and ditto for the client.
+             the error fraction in the client;
+           - and ditto for the SSO
 }\if{html}{\out{</div>}}
 }
 \description{
@@ -40,6 +40,6 @@ In that case the raw values of min, most probable, and max are returned,
 so no rounding is done.
 }
 \examples{
-SSO_out <- SSO_estimate(k_SSO = 1, n_SSO = 3000, N_client = 500, S = 2)
+SSO_out <- SSO_estimate(k_SSO = 1, n_SSO = 3000, N_client = 500, S = 500)
 SSO_graph_plot(SSO_out)
 }

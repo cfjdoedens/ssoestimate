@@ -2,13 +2,13 @@
 % Please edit documentation in R/ssoestimate.R
 \name{SSO_estimate}
 \alias{SSO_estimate}
-\title{Estimation of error fraction in SSO and client.}
+\title{Estimation of error fraction in SSO and client}
 \usage{
 SSO_estimate(k_SSO = 0, n_SSO = 350, N_client = 1000, S = 2000)
 }
 \arguments{
-\item{k_SSO}{The sum of partial and full errors found in the sample from the
-SSO.
+\item{k_SSO}{The sum of partial and full errors found in the sample from
+the SSO.
 k_SSO is a non negative real number.
 Default 0.}
 
@@ -30,18 +30,22 @@ Default 1000.}
 \item{S}{The number of segments, represented by their midpoints,
 in which is divided each of the dimensions
 of the two dimensional grid used for computing the probability
-graphs of the error fraction of the transactions in the SSO,
-and the errors in the transactions of the client.
+graphs of the error fraction of the transactions in the client,
+and the errors in the transactions of the SSO
 So S is the granularity of the grid.
 S is a positive integer.
 Default 2000.}
 }
 \value{
-A list of named elements containing:
+A list of named elements. This list can be used as input
+to SSO_graph_plot(), which transforms it into
+a form that is more easily interpreted by humans. The list consists of:
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{    - P_client, the probability graph of the error fraction in
+\if{html}{\out{<div class="sourceCode">}}\preformatted{    - P_client, a numeric representation of the
+      probability graph of the error fraction in
       the client transactions
-    - P_SSO, the probability graph of the error fraction in SSO
+    - P_SSO, a numeric representation of the
+      probability graph of the error fraction in the SSO transactions
     - the input parameters
 }\if{html}{\out{</div>}}
 }
@@ -58,13 +62,14 @@ we can then estimate the error rate for that specific client.
 This function makes such an estimation, using the assumption that we can
 consider the transactions of the client to be a random sample of all the
 transactions performed by the SSO.
-The function returns the probability graph of the error fraction in the SSO,
-and the probability graph of the error fraction in the client transactions.
+The function returns the probability graph of the error fraction in the
+client transactions, and the probability graph of the error fraction in
+the SSO.
 For the estimation, the function uses a two dimensional grid of
-postulated values for the error fractions of SSO, and client.
+postulated values for the error fractions of client and SSO.
 Both dimensions of the grid have the same granularity: S;
 this makes it easier to compare the two resulting probability curves.
 }
 \examples{
-x <- SSO_estimate(k_SSO = 1, n_SSO = 3000, N_client = 500, S = 2)
+x <- SSO_estimate(k_SSO = 1, n_SSO = 3000, N_client = 500, S = 501)
 }
